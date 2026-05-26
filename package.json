@@ -7,9 +7,7 @@
     "build": "node --env-file=.env.build scripts/prisma-generate.js && next build",
     "start": "next start",
     "lint": "eslint .",
-    "db:init": "node scripts/init-db.js",
-    "db:seed": "node scripts/seed.js",
-    "db:bootstrap": "node scripts/bootstrap.js"
+    "db:init": "node scripts/init-db.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -43,7 +41,6 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@vercel/analytics": "1.6.1",
     "autoprefixer": "^10.4.20",
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

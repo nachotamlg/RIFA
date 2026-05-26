@@ -4,7 +4,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "node scripts/bootstrap.js && next start",
+    "startCommand": "node scripts/init-db.js && next start",
     "restartPolicyMaxRetries": 5,
     "restartPolicyType": "on_failure"
   }
