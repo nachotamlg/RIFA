@@ -4,9 +4,9 @@ Este proyecto está configurado para crear automáticamente las tablas de la bas
 
 ## ¿Cómo funciona?
 
-1. **Build**: Next.js se compila normalmente
-2. **Deploy**: Se ejecuta automáticamente `node scripts/migrate.js` que corre `prisma migrate deploy`
-3. **Tablas**: Las tablas se crean según el schema de Prisma (`prisma/schema.prisma`)
+1. **Build Phase**: Next.js se compila normalmente SIN conectarse a la base de datos
+2. **Deploy Phase**: Se ejecuta automáticamente `npx prisma generate && node scripts/migrate.js` que corre `prisma migrate deploy`
+3. **Tablas**: Las tablas se crean según el schema de Prisma (`prisma/schema.prisma`) DESPUÉS de que el contenedor inicia
 
 ## Configuración en Railway
 
@@ -23,9 +23,10 @@ JWT_SECRET=tu-secreto-aqui
 ```
 
 ### 3. Verificar el Deploy
-- Railway ejecutará el comando `node scripts/migrate.js && next start`
+- Durante el build, Next.js se compila sin conectar a la BD
+- Al iniciar el contenedor, Railway ejecutará: `npx prisma generate && node scripts/migrate.js && next start`
 - Revisa los logs para ver si las migraciones se completaron
-- Las tablas se crearán automáticamente en tu base de datos
+- Las tablas se crearán automáticamente en tu base de datos durante el startup
 
 ## Scripts Disponibles
 

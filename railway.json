@@ -4,7 +4,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "node scripts/migrate.js && next start",
+    "startCommand": "npx prisma generate && node scripts/migrate.js && next start",
     "restartPolicyMaxRetries": 5,
     "restartPolicyType": "on_failure"
   }
