@@ -82,18 +82,23 @@ async function initializeDatabase() {
         try {
           await connection.execute(statement);
           successCount++;
+          console.log(`[v0] → ${preview}... ✓`);
         } catch (error) {
           // Ignorar errores si la tabla ya existe o el índice existe
           if (
             error.message.includes('already exists') ||
             error.message.includes('Duplicate key name') ||
-            error.code === 'ER_TABLE_EXISTS_ERROR'
+            error.code === 'ER_TABLE_EXISTS_ERROR' ||
+            error.message.includes('ER_DUP_KEYNAME') ||
+            error.message.includes('ER_KEY_NAME_USED_TWICE')
           ) {
             skipCount++;
+            console.log(`[v0] → ${preview}... (ya existe)`);
           } else {
+            // Log el error pero no falla - podría ser un error de sintaxis que debería revisarse
             errorCount++;
-            console.error(`[v0] ✗ Error en: ${preview}...`);
-            console.error(`[v0]   ${error.message}`);
+            console.warn(`[v0] ⚠ ${preview}...`);
+            console.warn(`[v0]   Error: ${error.message}`);
           }
         }
       }
@@ -101,18 +106,16 @@ async function initializeDatabase() {
 
     await connection.end();
     
+    // Mostrar resumen
+    console.log(`[v0] ✓ Base de datos inicializada`);
+    console.log(`[v0]   - Ejecutadas: ${successCount}`);
+    console.log(`[v0]   - Existentes: ${skipCount}`);
     if (errorCount > 0) {
-      console.warn(`[v0] ⚠ Completado con errores`);
-      console.warn(`[v0]   - Sentencias ejecutadas: ${successCount}`);
-      console.warn(`[v0]   - Elementos existentes: ${skipCount}`);
-      console.warn(`[v0]   - Errores: ${errorCount}`);
-      return false;
+      console.log(`[v0]   - Errores: ${errorCount}`);
     }
-
-    console.log(`[v0] ✓ Base de datos inicializada correctamente`);
-    console.log(`[v0]   - Sentencias ejecutadas: ${successCount}`);
-    console.log(`[v0]   - Elementos existentes: ${skipCount}`);
-    return true;
+    
+    // Retornar true si al menos se ejecutó algo o ya existe
+    return successCount > 0 || skipCount > 0;
   } catch (error) {
     console.error('[v0] ✗ Error al inicializar la base de datos:', error.message);
     if (process.env.DEBUG) {

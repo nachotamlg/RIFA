@@ -7,8 +7,9 @@
     "build": "node --env-file=.env.build scripts/prisma-generate.js && next build",
     "start": "next start",
     "lint": "eslint .",
-    "db:init": "node scripts/init-db.js",
-    "db:init:local": "node --env-file=.env.local scripts/init-db.js",
+    "db:init": "node scripts/init-db-robust.js",
+    "db:init:local": "node --env-file=.env.local scripts/init-db-robust.js",
+    "db:init:safe": "node scripts/init-db-safe.js",
     "db:test": "node --env-file=.env.local scripts/test-db-connection.js"
   },
   "dependencies": {
