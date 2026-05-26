@@ -183,6 +183,21 @@ pnpm dev    # Desarrollo con hot reload
 
 ## Despliegue
 
+### 🚂 Despliegue en Railway (Recomendado - Automático)
+
+Railway es la forma más fácil de desplegar esta aplicación. La base de datos se crea **completamente automática**.
+
+**Pasos rápidos:**
+1. Sube tu código a GitHub
+2. Ve a [railway.app](https://railway.app) y crea un nuevo proyecto
+3. Conecta tu repositorio de GitHub
+4. Agrega una Base de Datos MySQL (Railway lo configura automáticamente)
+5. ¡Eso es! Las migraciones y datos de prueba se crean automáticamente
+
+**Para documentación detallada:** Ver [RAILWAY_SETUP.md](./RAILWAY_SETUP.md)
+
+### Vercel
+
 Para desplegar en Vercel:
 
 1. Sube tu código a GitHub

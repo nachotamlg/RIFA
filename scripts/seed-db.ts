@@ -1,25 +1,20 @@
-import { prisma } from './db'
+import { PrismaClient } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
 
-/**
- * Database initialization script (fallback)
- * This is a fallback in case the seed script doesn't run
- * Normally, seeding happens via: pnpm prisma db seed
- * Or manually: ts-node scripts/seed-db.ts
- */
-export async function initializeDatabase() {
-  try {
-    console.log('[Init DB] Verificando estado de la base de datos...')
+const prisma = new PrismaClient()
 
-    // Quick check - if users exist, we're done
+async function main() {
+  try {
+    console.log('[Seed] Iniciando seeding de base de datos...')
+
+    // Check if data already exists
     const userCount = await prisma.user.count()
-    
     if (userCount > 0) {
-      console.log('[Init DB] Base de datos ya contiene usuarios, saltando inicialización')
+      console.log('[Seed] La base de datos ya tiene usuarios, saltando seeding')
       return
     }
 
-    console.log('[Init DB] Base de datos vacía, insertando datos de prueba...')
+    console.log('[Seed] Creando usuarios de prueba...')
 
     // Create admin user
     const hashedAdminPassword = await bcrypt.hash('admin123', 10)
@@ -31,7 +26,7 @@ export async function initializeDatabase() {
       },
     })
 
-    console.log('[Init DB] Usuario admin creado:', adminUser.email)
+    console.log('[Seed] Usuario admin creado:', adminUser.email)
 
     // Create test user
     const hashedTestPassword = await bcrypt.hash('test123', 10)
@@ -43,9 +38,11 @@ export async function initializeDatabase() {
       },
     })
 
-    console.log('[Init DB] Usuario de prueba creado:', testUser.email)
+    console.log('[Seed] Usuario de prueba creado:', testUser.email)
 
     // Create sample rifa numbers
+    console.log('[Seed] Creando números de rifa de prueba...')
+
     const sampleRifas = await prisma.rifa.createMany({
       data: [
         {
@@ -67,13 +64,30 @@ export async function initializeDatabase() {
           ganador: 'Juan Pérez',
           userId: adminUser.id,
         },
+        {
+          numero: '004',
+          descripcion: 'Cuarto número de prueba',
+          estado: 'activo',
+          userId: testUser.id,
+        },
+        {
+          numero: '005',
+          descripcion: 'Quinto número de prueba',
+          estado: 'ganador',
+          ganador: 'María González',
+          userId: testUser.id,
+        },
       ],
     })
 
-    console.log('[Init DB] Se crearon', sampleRifas.count, 'números de rifa de prueba')
-    console.log('[Init DB] ✅ Base de datos inicializada correctamente')
+    console.log('[Seed] Se crearon', sampleRifas.count, 'números de rifa de prueba')
+    console.log('[Seed] ✅ Base de datos inicializada correctamente')
   } catch (error) {
-    console.error('[Init DB] Error inicializando base de datos:', error)
-    // Don't throw - this is a fallback initialization
+    console.error('[Seed] Error:', error)
+    process.exit(1)
+  } finally {
+    await prisma.$disconnect()
   }
 }
+
+main()
