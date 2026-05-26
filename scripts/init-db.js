@@ -80,6 +80,16 @@ async function initializeDatabase() {
 
     await connection.end();
     console.log('[v0] ✓ Base de datos inicializada correctamente');
+
+    // Ejecutar seeding
+    console.log('[v0] Ejecutando seeding...');
+    const { execSync } = require('child_process');
+    try {
+      execSync('node scripts/seed.js', { stdio: 'inherit' });
+    } catch (error) {
+      console.warn('[v0] Advertencia durante seeding:', error.message);
+    }
+
     process.exit(0);
   } catch (error) {
     console.error('[v0] ✗ Error al inicializar la base de datos:', error.message);
