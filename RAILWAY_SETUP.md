@@ -1,96 +1,88 @@
-# Configuración de Railway con Prisma
+# Configuración de Base de Datos en Railway
 
-Este proyecto está configurado para crear automáticamente las tablas de la base de datos al hacer deploy en Railway.
+Este proyecto está configurado para crear automáticamente las tablas en MySQL sin depender de las migraciones de Prisma.
 
 ## ¿Cómo funciona?
 
-1. **Build Phase**: Next.js se compila normalmente SIN conectarse a la base de datos
-2. **Deploy Phase**: Se ejecuta automáticamente `npx prisma generate && node scripts/migrate.js` que corre `prisma migrate deploy`
-3. **Tablas**: Las tablas se crean según el schema de Prisma (`prisma/schema.prisma`) DESPUÉS de que el contenedor inicia
+1. **Build Phase**: Next.js se compila normalmente sin conectarse a la base de datos
+2. **Deploy Phase**: Al iniciar el contenedor, se ejecuta:
+   - `node scripts/init-db.js` - Ejecuta SQL puro para crear las tablas
+   - `npx prisma generate` - Genera el cliente de Prisma
+   - `next start` - Inicia la aplicación
 
-## Configuración en Railway
+## Archivos importantes
 
-### 1. Conectar Base de Datos
-- En Railway, ve a **Settings** → **Variables**
-- Asegúrate de que exista la variable `DATABASE_URL`
-- Railway proporciona automáticamente esta URL cuando conectas un plugin de MySQL
+- `database/init.sql` - Definición SQL de las tablas (User y Rifa)
+- `scripts/init-db.js` - Script que ejecuta el SQL puro en la base de datos
+- `railway.json` - Configuración de Railway para el deploy
 
-### 2. Variables de Entorno Requeridas
+## Paso a paso para configurar en Railway
+
+### 1. Conectar MySQL
+- Ve a tu proyecto en Railway
+- Click en "Add +" 
+- Selecciona "MySQL"
+- Railway creará automáticamente la variable de entorno `DATABASE_URL`
+
+### 2. Verificar variables de entorno
+Asegúrate de que `DATABASE_URL` esté configurada:
 ```
-DATABASE_URL=mysql://user:password@host:port/database
-NODE_ENV=production
-JWT_SECRET=tu-secreto-aqui
-```
-
-### 3. Verificar el Deploy
-- Durante el build, Next.js se compila sin conectar a la BD
-- Al iniciar el contenedor, Railway ejecutará: `npx prisma generate && node scripts/migrate.js && next start`
-- Revisa los logs para ver si las migraciones se completaron
-- Las tablas se crearán automáticamente en tu base de datos durante el startup
-
-## Scripts Disponibles
-
-```bash
-# Ejecutar migraciones localmente
-npm run prisma:migrate
-
-# Regenerar Prisma Client
-npm run prisma:generate
-
-# Desarrollo local
-npm run dev
-
-# Build
-npm run build
+mysql://user:password@host:port/database
 ```
 
-## Solución de Problemas
+### 3. Deploy
+- Push a la rama que tienes vinculada a Railway
+- Railway ejecutará automáticamente `node scripts/init-db.js`
+- Las tablas se crearán en tu base de datos
 
-### Las tablas no se crean
-1. Verifica que `DATABASE_URL` esté correctamente configurada en Railway
-2. Asegúrate de que el usuario de MySQL tenga permisos CREATE
-3. Revisa los logs de Railway para errores de conexión
-
-### Error de conexión a la base de datos
-1. Verifica que la base de datos MySQL esté iniciada en Railway
-2. Confirma que `DATABASE_URL` sea correcto
-3. Comprueba que el puerto sea accesible (generalmente 3306 para MySQL)
-
-### Migraciones falla localmente
-```bash
-# Regenerar Prisma Client
-npm run prisma:generate
-
-# Ejecutar migraciones
-npm run prisma:migrate
+### 4. Verificar los logs
+En el dashboard de Railway, revisa los logs de deployment:
+```
+[v0] Iniciando configuración de base de datos...
+[v0] Conectando a mysql.railway.internal:3306/railway
+[v0] Conexión exitosa a la base de datos
+[v0] Ejecutando: CREATE TABLE IF NOT EXISTS User...
+[v0] Ejecutando: CREATE TABLE IF NOT EXISTS Rifa...
+[v0] ✓ Base de datos inicializada correctamente
 ```
 
-## Estructura de Base de Datos
-
-El proyecto usa dos tablas principales:
+## Estructura de las tablas
 
 ### User
-```sql
-- id (Int, PK, Auto-increment)
-- email (String, Unique)
-- password (String)
-- name (String, Optional)
-- createdAt (DateTime)
-- updatedAt (DateTime)
-```
+- `id` (INT, Primary Key, Auto Increment)
+- `email` (VARCHAR, Unique)
+- `password` (VARCHAR)
+- `name` (VARCHAR, Optional)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
 
 ### Rifa
-```sql
-- id (Int, PK, Auto-increment)
-- numero (String, Unique)
-- descripcion (String, Optional)
-- ganador (String, Optional)
-- estado (String, Default: "activo")
-- userId (Int, FK → User.id)
-- createdAt (DateTime)
-- updatedAt (DateTime)
-```
+- `id` (INT, Primary Key, Auto Increment)
+- `numero` (VARCHAR, Unique)
+- `descripcion` (TEXT, Optional)
+- `ganador` (VARCHAR, Optional)
+- `estado` (VARCHAR) - valores: 'activo', 'vendido', 'ganador'
+- `userId` (INT, Foreign Key → User.id)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
 
-## Más Información
-- [Documentación de Prisma](https://www.prisma.io/docs)
-- [Documentación de Railway](https://docs.railway.app)
+## Ventajas de esta solución
+
+✅ Sin errores de conexión durante el build
+✅ Las tablas se crean en el startup sin depender de migraciones de Prisma
+✅ Compatible con Prisma para consultas en la aplicación
+✅ Rápido y confiable
+
+## Solución de problemas
+
+**Error: DATABASE_URL no configurada**
+- Verifica que hayas conectado MySQL en Railway
+- Revisa que la variable de entorno esté visible en el dashboard
+
+**Error: Can't reach database server**
+- Espera a que el contenedor de MySQL inicie completamente
+- Railway automáticamente reintentar 5 veces antes de fallar
+
+**Las tablas no se crean**
+- Revisa los logs de deployment en Railway
+- Verifica que `database/init.sql` no tenga errores SQL
