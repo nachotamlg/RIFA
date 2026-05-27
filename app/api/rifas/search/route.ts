@@ -38,9 +38,27 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        numero: true,
+        descripcion: true,
+        estado: true,
+        createdAt: true,
+      },
     })
 
-    return NextResponse.json(results, { status: 200 })
+    // Mapear campos para que el frontend pueda usarlos
+    const mappedResults = results.map(rifa => ({
+      id: rifa.id,
+      number: rifa.numero,
+      numero: rifa.numero,
+      description: rifa.descripcion,
+      descripcion: rifa.descripcion,
+      estado: rifa.estado,
+      createdAt: rifa.createdAt,
+    }))
+
+    return NextResponse.json(mappedResults, { status: 200 })
   } catch (error) {
     console.error('[v0] Error en búsqueda:', error)
     return NextResponse.json(
