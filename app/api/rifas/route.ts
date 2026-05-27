@@ -33,7 +33,18 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(rifas, { status: 200 })
+    // Mapear campos para que el frontend pueda usarlos
+    const mappedRifas = rifas.map(rifa => ({
+      id: rifa.id,
+      number: rifa.numero,
+      numero: rifa.numero,
+      description: rifa.descripcion,
+      descripcion: rifa.descripcion,
+      estado: rifa.estado,
+      createdAt: rifa.createdAt,
+    }))
+
+    return NextResponse.json(mappedRifas, { status: 200 })
   } catch (error) {
     console.error('[v0] Error en GET rifas:', error)
     return NextResponse.json(
@@ -63,7 +74,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { numero, descripcion } = body
+    // Soportar ambos nombres de campos (numero/number, descripcion/description)
+    const numero = body.numero || body.number
+    const descripcion = body.descripcion || body.description
 
     if (!numero) {
       return NextResponse.json(
@@ -92,6 +105,7 @@ export async function POST(request: NextRequest) {
         numero,
         descripcion: descripcion || null,
         userId: decoded.userId as number,
+        estado: 'activo',
       },
     })
 

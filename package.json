@@ -10,7 +10,8 @@
     "db:init": "node scripts/init-db-robust.js",
     "db:init:local": "node --env-file=.env.local scripts/init-db-robust.js",
     "db:init:safe": "node scripts/init-db-safe.js",
-    "db:test": "node --env-file=.env.local scripts/test-db-connection.js"
+    "db:test": "node --env-file=.env.local scripts/test-db-connection.js",
+    "db:seed:test-user": "node scripts/seed.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

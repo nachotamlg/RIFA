@@ -1,68 +1,54 @@
-const mysql = require('mysql2/promise');
-const bcrypt = require('bcrypt');
-const path = require('path');
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
+const prisma = new PrismaClient();
 
 async function seedDatabase() {
   try {
-    console.log('[v0] Iniciando seeding de base de datos...');
+    console.log('[v0] Iniciando creación de usuario de prueba...');
 
-    // Parsear DATABASE_URL
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-      console.log('[v0] ⚠ DATABASE_URL no configurada, saltando seeding');
+    // Hash de la contraseña
+    const hashedPassword = await bcrypt.hash('Test123!', 10);
+
+    // Verificar si el usuario ya existe
+    const existingUser = await prisma.user.findUnique({
+      where: { email: 'test@example.com' }
+    });
+
+    if (existingUser) {
+      console.log('[v0] ⚠ El usuario test@example.com ya existe en la base de datos');
+      console.log('\n═══════════════════════════════════════════════════════');
+      console.log('[v0] CREDENCIALES DISPONIBLES:');
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('[v0] Email: test@example.com');
+      console.log('[v0] Contraseña: Test123!');
+      console.log('═══════════════════════════════════════════════════════\n');
       return;
     }
 
-    // Extraer credenciales
-    const urlParts = new URL(dbUrl);
-    const config = {
-      host: urlParts.hostname,
-      port: urlParts.port || 3306,
-      user: urlParts.username,
-      password: urlParts.password,
-      database: urlParts.pathname.slice(1),
-    };
+    // Crear usuario de prueba
+    console.log('[v0] Creando nuevo usuario de prueba...');
+    const user = await prisma.user.create({
+      data: {
+        email: 'test@example.com',
+        password: hashedPassword,
+        name: 'Usuario Prueba'
+      }
+    });
 
-    const connection = await mysql.createConnection(config);
-    console.log('[v0] Conectado a base de datos para seeding');
+    console.log('[v0] ✓ Usuario de prueba creado exitosamente');
+    console.log('\n═══════════════════════════════════════════════════════');
+    console.log('[v0] CREDENCIALES DE PRUEBA:');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('[v0] Email: test@example.com');
+    console.log('[v0] Contraseña: Test123!');
+    console.log('═══════════════════════════════════════════════════════\n');
 
-    // Verificar si ya existe un usuario
-    const [users] = await connection.execute('SELECT COUNT(*) as count FROM User');
-    
-    if (users[0].count > 0) {
-      console.log('[v0] La tabla User ya contiene usuarios, saltando seeding');
-      await connection.end();
-      return;
-    }
-
-    // Hash de la contraseña demo
-    const hashedPassword = await bcrypt.hash('demo123456', 10);
-
-    // Insertar usuario de prueba
-    const sqlInsert = 'INSERT INTO User (email, password, name) VALUES (?, ?, ?)';
-    await connection.execute(sqlInsert, [
-      'demo@example.com',
-      hashedPassword,
-      'Usuario Demo'
-    ]);
-
-    console.log('[v0] ✓ Usuario demo creado: demo@example.com / demo123456');
-
-    // Insertar una rifa de ejemplo
-    const sqlRifa = 'INSERT INTO Rifa (numero, descripcion, userId, estado) VALUES (?, ?, ?, ?)';
-    await connection.execute(sqlRifa, [
-      '001',
-      'Rifa de ejemplo',
-      1,
-      'activo'
-    ]);
-
-    console.log('[v0] ✓ Rifa de ejemplo creada');
-
-    await connection.end();
-    console.log('[v0] ✓ Seeding completado exitosamente');
   } catch (error) {
     console.error('[v0] Error durante seeding:', error.message);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

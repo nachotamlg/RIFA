@@ -29,7 +29,7 @@ export function AuthForm({ type }: AuthFormProps) {
       const endpoint = type === 'login' ? '/api/auth/login' : '/api/auth/register'
       const payload = type === 'login'
         ? { email: username, password }
-        : { username, email, password }
+        : { name: username, email, password }
 
       const response = await fetch(endpoint, {
         method: 'POST',
