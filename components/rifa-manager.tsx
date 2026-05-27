@@ -373,34 +373,36 @@ export function RifaManager() {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-foreground truncate">{rifa.number}</p>
-                              {rifa.description && (
-                                <p className="text-sm text-muted-foreground truncate">{rifa.description}</p>
-                              )}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(rifa.createdAt).toLocaleDateString('es-ES')}
-                              </p>
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 break-words">
+                                <p className="font-semibold text-foreground text-lg">{rifa.number}</p>
+                                {rifa.description && (
+                                  <p className="text-sm text-muted-foreground mt-1">{rifa.description}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-2 shrink-0">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  onClick={() => handleEditStart(rifa)}
+                                  className="h-8 w-8 border-border"
+                                >
+                                  <Edit2 className="h-4 w-4 text-accent" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  onClick={() => handleDelete(rifa.id)}
+                                  className="h-8 w-8 border-border hover:border-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex gap-2 shrink-0">
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                onClick={() => handleEditStart(rifa)}
-                                className="h-8 w-8 border-border"
-                              >
-                                <Edit2 className="h-4 w-4 text-accent" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                onClick={() => handleDelete(rifa.id)}
-                                className="h-8 w-8 border-border hover:border-destructive"
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(rifa.createdAt).toLocaleDateString('es-ES')}
+                            </p>
                           </div>
                         )}
                       </div>
